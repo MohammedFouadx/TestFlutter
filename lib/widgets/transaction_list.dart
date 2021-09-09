@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import '../models/transaction.dart';
 import 'package:flutter/material.dart';
 
@@ -9,49 +11,63 @@ class TransactionList extends StatelessWidget {
   final amountController = TextEditingController();
 
   final List<Transaction> transactions;
-  TransactionList(this.transactions);
+  final Function deleteTx;
+  TransactionList(this.transactions , this.deleteTx);
 
   @override
   Widget build(BuildContext context) {
 
-    return Container(
-      height: 300,
-        child: transactions.isEmpty ? Column(children: [
-          Text('No transaction added yet!'  , style: Theme.of(context).textTheme.title,),
-          Container(
-            height: 200,
-              child: Image.asset('assets/images/waiting.png'))
-        ],) : ListView.builder(
+    return transactions.isEmpty
+        ?  LayoutBuilder(builder: ( ctx , constraints) {
+            return Column(
+              children: [
+                Text(
+                  'No transaction added yet!',
+                  style: Theme.of(context).textTheme.title,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  height: constraints.maxHeight * 0.6,
+                  child: Image.asset('assets/images/waiting.png'),
+                ),
+              ],
+            );
+          })
+        : ListView.builder(
           itemBuilder: (ctx , index) {
-            return  Card(
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.all(20.0),
-                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    decoration:
-                    BoxDecoration(
-                        border: Border.all(
-                            color: Theme.of(context).primaryColor)),
-                    child: Text('\$${transactions[index].amount}',
-                      style: TextStyle(fontSize: 20,
-                          color: Theme.of(context).accentColor,
-                          fontWeight: FontWeight.bold),),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(transactions[index].title,
-                        style: Theme.of(context).textTheme.title),
+            return Card(
+              elevation: 3,
+              margin: EdgeInsets.symmetric(vertical: 8 , horizontal: 5),
+              color: Color.fromRGBO(250, 250, 250, 1),
+              child: ListTile(
+                leading: CircleAvatar(
+                  radius: 30,
+                  child: Text('\$${transactions[index].amount}' ,
+                    style: TextStyle( color: Colors.white , fontWeight: FontWeight.bold),),
+                  backgroundColor: Theme.of(context).accentColor,
+                ),
+                title: Text('${transactions[index].title}' ,
+                style: Theme.of(context).textTheme.title,),
+                subtitle: Text(DateFormat.yMMMd().format(transactions[index].date)),
 
-                      Text(transactions[index].date.toString(), style: TextStyle(fontSize: 15,
-                          color: Colors.grey),)
-                    ],),
-                ],),
+                trailing: MediaQuery.of(context).size.width > 500 ? FlatButton.icon
+                  (
+                    onPressed: () => deleteTx(transactions[index].id),
+                    icon: Icon(Icons.delete , color: Theme.of(context).errorColor,) ,
+                    label: Text('Delete')
+                )
+
+                    :IconButton(
+                  icon: Icon(Icons.delete , color: Theme.of(context).errorColor,),
+                  onPressed: () => deleteTx(transactions[index].id)
+                ),
+              ),
             );
           },
           itemCount: transactions.length,
-        ),
+
     );
 
   }
